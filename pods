@@ -6,13 +6,23 @@
 
 using namespace std;
 
+
+//STALE DLA KART:
+
+const int KIER = 0;    
+const int KARO = 1;   
+const int TREFL = 2;   
+const int PIK = 3;     
+
+const int CZARNY = 0;
+const int CZERWONY = 1;
 //KARTY
 struct Card
 {
     //wyglad karty-charakterystyka
     int value;
-    int shape;
-    int color;
+	int shape; //0->kier, 1->karo, 2->trefl, 3->pik
+    int color; //czarny to wartosc 0 a czerwony 1
 
     bool is_face_up; //czy karta jaest widoczna
 
@@ -25,8 +35,13 @@ struct Card
         value = val;
 		//ksztalt karty->kier...
         shape = sha;
-		//kolor karty->czer/czar
-        color = col;
+		//okreslenie kolor karty->czer/czar
+        if (sha == KIER || sha == KARO) {
+            color = CZERWONY;  //kieru i karo
+        }
+        else {
+            color = CZARNY;    //trefla i piku
+        }
 
 		is_face_up = false; //karta na poczatku jest zakryta
     }
