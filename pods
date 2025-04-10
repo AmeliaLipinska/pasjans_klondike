@@ -1,1 +1,28 @@
 
+//Amelia Lipińska 203721 GRA PASJANS KLODLIKE
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <stack>
+
+
+
+using namespace std;
+
+//KARTY
+struct Card
+{
+    //wyglad karty-charakterystyka
+    int value;
+    int shape;
+    int color;
+
+    bool is_face_up; //czy karta jaest widoczna
+
+
+};
+int main()
+{
+    
+}
+
