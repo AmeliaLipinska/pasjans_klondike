@@ -4,8 +4,6 @@
 #include <queue>
 #include <stack>
 
-
-
 using namespace std;
 
 //KARTY
@@ -21,9 +19,16 @@ struct Card
     //konstruktor domyslny->mówi że tworzymy kartę (nie trzeba tego robic wtedy recznie)
     Card() {}
     //ustalanie kart
-    Card(int value, int shape, int color)
+    Card(int val, int sha, int col)
     {
+        //ustawienie wartosci value-> A dama 2,3...
+        value = val;
+		//ksztalt karty->kier...
+        shape = sha;
+		//kolor karty->czer/czar
+        color = col;
 
+		is_face_up = false; //karta na poczatku jest zakryta
     }
 
 };
