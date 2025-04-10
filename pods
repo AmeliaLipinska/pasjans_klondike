@@ -1,4 +1,3 @@
-
 //Amelia Lipińska 203721 GRA PASJANS KLODLIKE
 #include <iostream>
 #include <vector>
@@ -19,6 +18,13 @@ struct Card
 
     bool is_face_up; //czy karta jaest widoczna
 
+    //konstruktor domyslny->mówi że tworzymy kartę (nie trzeba tego robic wtedy recznie)
+    Card() {}
+    //ustalanie kart
+    Card(int value, int shape, int color)
+    {
+
+    }
 
 };
 int main()
