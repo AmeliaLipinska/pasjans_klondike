@@ -63,7 +63,57 @@ struct Card
     }
 
 };
+
+class Gameplay {
+    Card deck[MAX_C];
+    queue<Card> choice;
+
+    vector<Card> pile1, pile2, pile3, pile4, pile5, pile6, pile7;
+    vector<vector<Card>> h1_7 = { pile1, pile2, pile3, pile4, pile5, pile6, pile7 };
+
+    stack<Card> s8, s9, s10, s11;
+    vector<stack<Card>> s8_11 = { s8, s9, s10, s11 };
+
+public:
+    void generujTalie() {
+        int index = 0;
+        for (int shape = 0; shape < 4; ++shape) {
+            for (int val = 1; val <= 13; ++val) {
+                deck[index++] = Card(val, shape, (shape == KIER || shape == KARO) ? CZERWONY : CZARNY);
+            }
+        }
+
+        // Tasowanie ręczne 
+        srand(time(0));
+
+        for (int i = MAX_C - 1; i > 0; --i) {
+            int j = rand() % (i + 1);
+            swap(deck[i], deck[j]);
+        }
+    }
+
+    void rozdaj() {
+        int position = 0;
+        for (int i = 0; i < 7; ++i) 
+        {
+            for (int j = 0; j <= i; ++j) {
+                h1_7[i].push_back(deck[position]);
+                if (j == i) h1_7[i][j].is_face_up = true;
+                position++;
+            }
+        }
+        for (int i = position; i < MAX_C; ++i) {
+            choice.push(deck[i]);
+        }
+    }
+};
+
 int main()
 {
 
+        Gameplay gra;
+        gra.generujTalie();         //  tasowanie i stworzenie talii
+        gra.rozdaj();      //  rozłożenie na kolumny
+        gra.wyswietlPlansze();      //  graficzne przedstawienie
+    
 }
