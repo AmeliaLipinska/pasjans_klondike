@@ -25,7 +25,7 @@ struct Card
     int color; //czarny to wartosc 0 a czerwony 1
 
     bool is_face_up; //czy karta jaest widoczna
-	string card_descrition; //opis karty->kier 2 trefl 3 itd
+	string card_description; //opis karty->kier 2 trefl 3 itd
 
     //konstruktor domyslny->mówi że tworzymy kartę (nie trzeba tego robic wtedy recznie)
     Card() {}
@@ -46,11 +46,20 @@ struct Card
         string card_value[] = { "", "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K" };
 
         //stworzona karta:
-        card_descrition = card_shape[shape] + card_value[value];
+        card_description = card_shape[shape] + card_value[value];
 
 		//ustawienie koloru
 
 		color = (shape == KIER || shape == KARO) ? CZERWONY : CZARNY;
+    }
+
+    Card& operator=(const Card& c) {
+        value = c.value;
+        shape = c.shape;
+        color = c.color;
+        card_description = c.card_description;
+        is_face_up = c.is_face_up;
+        return *this;
     }
 
 };
