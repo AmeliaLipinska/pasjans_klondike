@@ -26,11 +26,11 @@ const int CZERWONY = 1;
 struct Card
 {
     //wyglad karty-charakterystyka
-    int value;
-    int shape; //0->kier, 1->karo, 2->trefl, 3->pik
-    int color; //czarny to wartosc 0 a czerwony 1
+    int value=0;
+    int shape=0; //0->kier, 1->karo, 2->trefl, 3->pik
+    int color=0; //czarny to wartosc 0 a czerwony 1
 
-    bool is_face_up; //czy karta jaest widoczna
+    bool is_face_up=0; //czy karta jaest widoczna
     string card_description; //opis karty->kier 2 trefl 3 itd
 
     //konstruktor domyslny->mówi że tworzymy kartę (nie trzeba tego robic wtedy recznie)
