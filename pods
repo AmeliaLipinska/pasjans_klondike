@@ -8,6 +8,7 @@ using namespace std;
 
 
 //STALE DLA KART:
+const int MAX_C = 52; //liczba kart w talii
 
 const int KIER = 0;
 const int KARO = 1;
@@ -25,7 +26,7 @@ struct Card
     int color; //czarny to wartosc 0 a czerwony 1
 
     bool is_face_up; //czy karta jaest widoczna
-	string card_description; //opis karty->kier 2 trefl 3 itd
+    string card_description; //opis karty->kier 2 trefl 3 itd
 
     //konstruktor domyslny->mówi że tworzymy kartę (nie trzeba tego robic wtedy recznie)
     Card() {}
@@ -48,9 +49,9 @@ struct Card
         //stworzona karta:
         card_description = card_shape[shape] + card_value[value];
 
-		//ustawienie koloru
+        //ustawienie koloru
 
-		color = (shape == KIER || shape == KARO) ? CZERWONY : CZARNY;
+        color = (shape == KIER || shape == KARO) ? CZERWONY : CZARNY;
     }
 
     Card& operator=(const Card& c) {
@@ -94,7 +95,7 @@ public:
 
     void rozdaj() {
         int position = 0;
-        for (int i = 0; i < 7; ++i) 
+        for (int i = 0; i < 7; ++i)
         {
             for (int j = 0; j <= i; ++j) {
                 h1_7[i].push_back(deck[position]);
@@ -111,9 +112,9 @@ public:
 int main()
 {
 
-        Gameplay gra;
-        gra.generujTalie();         //  tasowanie i stworzenie talii
-        gra.rozdaj();      //  rozłożenie na kolumny
-        gra.wyswietlPlansze();      //  graficzne przedstawienie
-    
+    Gameplay gra;
+    gra.generujTalie();         //  tasowanie i stworzenie talii
+    gra.rozdaj();      //  rozłożenie na kolumny
+    gra.wyswietlPlansze();      //  graficzne przedstawienie
+
 }
