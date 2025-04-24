@@ -1,15 +1,19 @@
-//Amelia Lipińska 203721 GRA PASJANS KLODLIKE
+// Amelia Lipińska 203721 
+// Alicja Szajgin 203383
+// GRA PASJANS KLODLIKE
 #include <iostream>
 #include <vector>
 #include <queue>
 #include <stack>
+#include <ctime>
+#include <cstdlib>
 #include <iomanip>
 
-using namespace std;
 
+using namespace std;
+const int MAX_C = 52;
 
 //STALE DLA KART:
-const int MAX_C = 52; //liczba kart w talii
 
 const int KIER = 0;
 const int KARO = 1;
@@ -55,15 +59,6 @@ struct Card
         color = (shape == KIER || shape == KARO) ? CZERWONY : CZARNY;
     }
 
-    Card& operator=(const Card& c) {
-        value = c.value;
-        shape = c.shape;
-        color = c.color;
-        card_description = c.card_description;
-        is_face_up = c.is_face_up;
-        return *this;
-    }
-
 };
 
 class Gameplay {
@@ -77,43 +72,45 @@ class Gameplay {
     vector<stack<Card>> s8_11 = { s8, s9, s10, s11 };
 
 public:
-    void generujTalie() {
-        int index = 0;
-        for (int shape = 0; shape < 4; ++shape) {
-            for (int val = 1; val <= 13; ++val) {
-                deck[index++] = Card(val, shape, (shape == KIER || shape == KARO) ? CZERWONY : CZARNY);
-            }
-        }
+    void generujTalie(); // tylko deklaracja
+    void rozdaj();       // tylko deklaracja 
+    void printNaglowek();
+    void printLinia();
+    void printGora();
+    void printDol();
+    void printNumeracja();
+    void wyswietlPlansze();
+};
 
-        // Tasowanie ręczne 
-        srand(time(0));
-
-        for (int i = MAX_C - 1; i > 0; --i) {
-            int j = rand() % (i + 1);
-            swap(deck[i], deck[j]);
+void Gameplay::generujTalie() {
+    int index = 0;
+    for (int shape = 0; shape < 4; ++shape) {
+        for (int val = 1; val <= 13; ++val) {
+            deck[index++] = Card(val, shape, (shape == KIER || shape == KARO) ? CZERWONY : CZARNY);
         }
     }
 
-    void rozdaj() {
-        int position = 0;
-        for (int i = 0; i < 7; ++i)
-        {
-            for (int j = 0; j <= i; ++j) {
-                h1_7[i].push_back(deck[position]);
-                if (j == i) h1_7[i][j].is_face_up = true;
-                position++;
-            }
-        }
-        for (int i = position; i < MAX_C; ++i) {
-            choice.push(deck[i]);
+    srand(time(0)); // klasyczne tasowanie
+
+    for (int i = MAX_C - 1; i > 0; --i) {
+        int j = rand() % (i + 1);
+        swap(deck[i], deck[j]);
+    }
+}
+
+void Gameplay::rozdaj() {
+    int position = 0;
+    for (int i = 0; i < 7; ++i) {
+        for (int j = 0; j <= i; ++j) {
+            h1_7[i].push_back(deck[position]);
+            if (j == i) h1_7[i][j].is_face_up = true;
+            position++;
         }
     }
-	void wyswietlPlansze(); //  graficzne przedstawienie
-	void printNaglowek(); //  nagłówek
-	void printLinia(); //  linia
-	void printGora(); //  góra
-	void printDol(); //  dół
-	void printNumeracja(); //  numeracja kolumn
+
+    for (int i = position; i < MAX_C; ++i) {
+        choice.push(deck[i]);
+    }
 };
 
 void Gameplay::printNaglowek() {
@@ -168,16 +165,15 @@ void Gameplay::printNumeracja() {
         cout << setw(7) << i;
     }
     cout << endl;
-}
+};
 
 void Gameplay::wyswietlPlansze() {
     printNaglowek();
     printLinia();
     printGora();
-    printLinia();
     printDol();
     printNumeracja();
-}
+};
 
 int main()
 {
