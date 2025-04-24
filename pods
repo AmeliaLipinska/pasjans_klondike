@@ -3,6 +3,7 @@
 #include <vector>
 #include <queue>
 #include <stack>
+#include <iomanip>
 
 using namespace std;
 
@@ -107,6 +108,70 @@ public:
             choice.push(deck[i]);
         }
     }
+
+    void printNaglowek() {
+        cout << "      0                    8      9      10     11\n";  // Przesunięcie o 6
+    }
+
+    void printLinia() {
+        cout << "   --------------------------------------------------\n";
+    }
+
+    void printGora() {
+        cout << "      ";  // Przesunięcie o 6
+        if (!choice.empty())
+            cout << setw(6) << left << choice.front().card_description;
+        else
+            cout << setw(6) << "0";  // Dodanie odpowiedniego odstępu
+
+        cout << "               ";
+        for (int i = 0; i < 4; i++) {
+            if (!s8_11[i].empty())
+                cout << setw(7) << left << s8_11[i].top().card_description;
+            else
+                cout << setw(7) << left << "0";  // Dodanie odpowiedniego odstępu
+        }
+        cout << endl;
+    }
+
+    void printDol() {
+        const int STALA_WYSOKOSC = 15;
+
+        for (int i = 0; i < STALA_WYSOKOSC; i++) {
+            cout << "   ";  // Pozostawiamy to tak, jak było, bez przesunięcia
+            for (int j = 0; j < 7; j++) {
+                cout << "| ";
+                if (i < h1_7[j].size()) {
+                    if (h1_7[j][i].is_face_up)
+                        cout << setw(4) << left << h1_7[j][i].card_description << " ";
+                    else
+                        cout << "===  ";
+                }
+                else {
+                    cout << "     ";
+                }
+            }
+            cout << "|\n";
+        }
+    }
+
+    void printNumeracja() {
+        cout << "       ";  // Pozostawiamy numerację tak, jak była
+        for (int i = 1; i <= 7; i++) {
+            cout << setw(7) << i;
+        }
+        cout << endl;
+    }
+
+    void wyswietlPlansze() {
+        printNaglowek();
+        printLinia();
+        printGora();
+        printLinia();
+        printDol();
+        printNumeracja();
+    }
+
 };
 
 int main()
