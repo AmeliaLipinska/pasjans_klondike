@@ -171,6 +171,7 @@ void Gameplay::wyswietlPlansze() {
     printNaglowek();
     printLinia();
     printGora();
+    printLinia();
     printDol();
     printNumeracja();
 };
