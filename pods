@@ -109,6 +109,11 @@ public:
         }
     }
 
+
+
+//PRZENIESC FUNKCJE TWORZACE POZA KLASE BO SMIETNIK
+
+
     void printNaglowek() {
         cout << "      0                    8      9      10     11\n";  // Przesunięcie o 6
     }
