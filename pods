@@ -72,14 +72,19 @@ class Gameplay {
     vector<stack<Card>> s8_11 = { s8, s9, s10, s11 };
 
 public:
-    void generujTalie(); // tylko deklaracja
-    void rozdaj();       // tylko deklaracja 
+
+    //deklaracje funkcji
+    void generujTalie(); 
+    void rozdaj();        
     void printNaglowek();
     void printLinia();
     void printGora();
     void printDol();
     void printNumeracja();
     void wyswietlPlansze();
+
+	void Menu();
+	void przeniesKarte(int zKolumny, int doKolumny); 
 };
 
 void Gameplay::generujTalie() {
@@ -176,12 +181,72 @@ void Gameplay::wyswietlPlansze() {
     printNumeracja();
 };
 
+//RUCHY
+
+void Gameplay::Menu() {
+    int z, do_;
+        
+	generujTalie();         //  tasowanie i stworzenie talii
+	rozdaj();      //  rozłożenie na kolumny
+
+    while (true)
+    {
+        wyswietlPlansze();
+
+        cout << "\nPRZENIESIENIE KARTY.\n";
+        cout << "Podaj numer kolumny z(1-7): ";
+        cin >> z;
+        cout << "Podaj numer kolumny do(1-7): ";
+        cin >> do_;
+
+        przeniesKarte(z - 1, do_ - 1);
+    }
+}
+//rzeniesienie karty z jednego studiku na drugi:
+
+void Gameplay::przeniesKarte(int zKolumny, int doKolumny) 
+{
+	//sprawdzenie czy indeksy kolumn są poprawne
+    if (zKolumny < 0 || zKolumny >= 7 || doKolumny < 0 || doKolumny >= 7) {
+        cout << "Nieprawidlowy indeks kolumny.\n";
+        return;
+    }
+
+	//przypisanie kolumn do zmiennych
+    vector<Card>& z = h1_7[zKolumny];
+    vector<Card>& do_ = h1_7[doKolumny];
+
+    if (z.empty()) {
+        cout << "Kolumna Z jest pusta.\n";
+        return;
+    }
+
+    Card karta = z.back();
+
+    //sprawdzenie czy karta jest zakryta
+    if (!karta.is_face_up) {
+        cout << "Nie mozna przeniesc zakrytej karty.\n";
+        return;
+    }
+
+    do_.push_back(karta);
+    z.pop_back();
+
+    // Odkryj nową ostatnią kartę jeśli istnieje
+    if (!z.empty()) {
+        z.back().is_face_up = true;
+    }
+
+    cout << "Przeniesiono karte " << karta.card_description << " z kolumny " << zKolumny + 1 << " do kolumny " << doKolumny + 1 << ".\n";
+}
+
+
+
 int main()
 {
-
+    //stworzenie obiektu gry
     Gameplay gra;
-    gra.generujTalie();         //  tasowanie i stworzenie talii
-    gra.rozdaj();      //  rozłożenie na kolumny
-    gra.wyswietlPlansze();      //  graficzne przedstawienie
-
+    //wywołanie menu
+    gra.Menu();
+	return 0;
 }
