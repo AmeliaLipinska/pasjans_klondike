@@ -85,6 +85,7 @@ public:
 
     void Menu();
     void przeniesKarte(int zKolumny, int doKolumny);
+	void przeniesWektorStos(int zWektor, int doStos);
 };
 
 void Gameplay::generujTalie() {
@@ -184,7 +185,7 @@ void Gameplay::wyswietlPlansze() {
 //RUCHY
 
 void Gameplay::Menu() {
-    int z, do_;
+    int z, d;
 
     generujTalie();         //  tasowanie i stworzenie talii
     rozdaj();      //  rozłożenie na kolumny
@@ -202,11 +203,12 @@ void Gameplay::Menu() {
         cout << "Podaj numer kolumny z(1-7): ";
         cin >> z;
         cout << "Podaj numer kolumny do(1-7): ";
-        cin >> do_;
+        cin >> d;
 
         
         //jezeli z_ i do_ jest 1-7 to jest to ruch tylko miedzy wektorami
-        przeniesKarte(z - 1, do_ - 1);
+        przeniesKarte(z - 1, d - 1);
+        przeniesWektorStos(z-1, d-8);
     }
 }
 //rzeniesienie karty z jednego studiku na drugi:
@@ -273,7 +275,57 @@ void Gameplay::przeniesKarte(int zKolumny, int doKolumny)
     cout << "Przeniesiono karte " << karta.card_description << " z kolumny " << zKolumny + 1 << " do kolumny " << doKolumny + 1 << ".\n";
 }
 
+void Gameplay::przeniesWektorStos(int zWektor, int doStos)
+{
+    if (zWektor < 0 || zWektor >= 7 || doStos < 0 || doStos >= 4) {
+        cout << "Nieprawidlowy indeks kolumny lub stosu.\n";
+        return;
+    }
 
+    vector<Card>& z_ = h1_7[zWektor];
+    stack<Card>& stos = s8_11[doStos];
+
+    if (z_.empty()) {
+        cout << "Wybrana kolumna jest pusta.\n";
+        return;
+    }
+
+    Card karta = z_.back();
+
+    if (!karta.is_face_up) {
+        cout << "Nie mozna przeniesc zakrytej karty.\n";
+        return;
+    }
+
+    if (stos.empty()) {
+        if (karta.value != 1) {
+            cout << "Na pusty stos można położyć tylko Asa.\n";
+            return;
+        }
+    }
+    else {
+        Card top = stos.top();
+
+        if (top.shape != karta.shape) {
+            cout << "Na stos można kłaść tylko karty tego samego koloru.\n";
+            return;
+        }
+
+        if (karta.value != top.value + 1) {
+            cout << "Na stos można położyć tylko kartę o wartości większej o 1.\n";
+            return;
+        }
+    }
+
+    stos.push(karta);
+    z_.pop_back();
+
+    if (!z_.empty()) {
+        z_.back().is_face_up = true;
+    }
+
+    cout << "Przeniesiono karte " << karta.card_description << " z kolumny " << zWektor + 1 << " na stos " << doStos + 8 << ".\n";
+}
 
 int main()
 {
