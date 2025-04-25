@@ -85,7 +85,7 @@ public:
 
     void Menu();
     void przeniesKarte(int zKolumny, int doKolumny);
-	void przeniesWektorStos(int zWektor, int doStos);
+    void przeniesWektorStos(int zWektor, int doStos);
 };
 
 void Gameplay::generujTalie() {
@@ -115,6 +115,7 @@ void Gameplay::rozdaj() {
     }
 
     for (int i = position; i < MAX_C; ++i) {
+        
         choice.push(deck[i]);
     }
 };
@@ -186,94 +187,253 @@ void Gameplay::wyswietlPlansze() {
 
 void Gameplay::Menu() {
     int z, d;
+    string kartaStr;
 
-    generujTalie();         //  tasowanie i stworzenie talii
-    rozdaj();      //  rozłożenie na kolumny
+    generujTalie();
+    rozdaj();
 
     while (true)
     {
         wyswietlPlansze();
 
-
-        //DODAC WARUNEK CO DO FORMY PODANIA RUCHU
-        //GRZEGOREK MA RUCH W FORMIE "1 7S 3" A JA MAM ZROBIONE TYLKO ZA POMOCA WYBORU 0 1 2...11
-        //TRZEBA DAC WARUNKI DO FUNKCJI RUCHÓW BY PROGRAM WIEDZIAŁ ŻE MA MUŻYC KONKRETNEGO RUCHU
-
-        cout << "\nPRZENIESIENIE KARTY.\n";
-        cout << "Podaj numer kolumny z(1-7): ";
+        cout << "\n>> ";
         cin >> z;
-        cout << "Podaj numer kolumny do(1-7): ";
-        cin >> d;
 
-        
-        //jezeli z_ i do_ jest 1-7 to jest to ruch tylko miedzy wektorami
-        przeniesKarte(z - 1, d - 1);
-        przeniesWektorStos(z-1, d-8);
+        // Dobieranie kart (np. >> 0)
+        if (z == 0 && cin.peek() == '\n') {
+            int ile = min(3, (int)choice.size());
+            for (int i = 0; i < ile; ++i) {
+                Card temp = choice.front();
+                choice.pop();
+                temp.is_face_up = true;
+                choice.push(temp);
+            }
+            continue;
+        }
+
+        // Reszta polecenia: >> z karta d
+        cin >> kartaStr >> d;
+
+        // RUCH: z kolumny (1–7) do kolumny (1–7)
+        if (z >= 1 && z <= 7 && d >= 1 && d <= 7) {
+            vector<Card>& kolumna = h1_7[z - 1];
+
+            int idx = -1;
+            for (int i = 0; i < kolumna.size(); ++i) {
+                if (kolumna[i].card_description == kartaStr && kolumna[i].is_face_up) {
+                    idx = i;
+                    break;
+                }
+            }
+
+            if (idx == -1) {
+                cout << "Nie znaleziono odkrytej karty " << kartaStr << " w kolumnie " << z << ".\n";
+                continue;
+            }
+
+            vector<Card> tymczasowe(kolumna.begin() + idx, kolumna.end());
+            vector<Card>& cel = h1_7[d - 1];
+
+            if (!cel.empty()) {
+                Card& top = cel.back();
+                if (top.color == tymczasowe[0].color || top.value != tymczasowe[0].value + 1) {
+                    cout << "Nie można położyć – kolor lub wartość się nie zgadza.\n";
+                    continue;
+                }
+            }
+            else {
+                if (tymczasowe[0].value != 13) {
+                    cout << "Na pustą kolumnę można położyć tylko króla.\n";
+                    continue;
+                }
+            }
+
+            kolumna.erase(kolumna.begin() + idx, kolumna.end());
+            cel.insert(cel.end(), tymczasowe.begin(), tymczasowe.end());
+            if (!kolumna.empty()) kolumna.back().is_face_up = true;
+            continue;
+        }
+
+        // RUCH: z kolumny (1–7) do stosu końcowego (8–11)
+        if (z >= 1 && z <= 7 && d >= 8 && d <= 11) {
+            vector<Card>& kolumna = h1_7[z - 1];
+            if (kolumna.empty() || !kolumna.back().is_face_up) {
+                cout << "Brak odkrytej karty na końcu kolumny.\n";
+                continue;
+            }
+
+            Card karta = kolumna.back();
+            if (karta.card_description != kartaStr) {
+                cout << "Na końcu kolumny nie ma " << kartaStr << ".\n";
+                continue;
+            }
+
+            stack<Card>& stos = s8_11[d - 8];
+            if (stos.empty()) {
+                if (karta.value != 1) {
+                    cout << "Na pusty stos można położyć tylko Asa.\n";
+                    continue;
+                }
+            }
+            else {
+                Card top = stos.top();
+                if (top.shape != karta.shape || karta.value != top.value + 1) {
+                    cout << "Nieprawidłowy ruch do stosu końcowego.\n";
+                    continue;
+                }
+            }
+
+            stos.push(karta);
+            kolumna.pop_back();
+            if (!kolumna.empty()) kolumna.back().is_face_up = true;
+            continue;
+        }
+
+        // RUCH: z choice (0) do kolumny (1–7)
+        if (z == 0 && d >= 1 && d <= 7) {
+            if (choice.empty()) {
+                cout << "Stos dobierania pusty.\n";
+                continue;
+            }
+
+            Card pierwsza = choice.front();
+            if (pierwsza.card_description != kartaStr) {
+                cout << "Pierwsza karta w kolejce to nie " << kartaStr << ".\n";
+                continue;
+            }
+
+            vector<Card>& cel = h1_7[d - 1];
+
+            if (!cel.empty()) {
+                Card& top = cel.back();
+                if (top.color == pierwsza.color || top.value != pierwsza.value + 1) {
+                    cout << "Nie można położyć tej karty na kolumnę.\n";
+                    continue;
+                }
+            }
+            else {
+                if (pierwsza.value != 13) {
+                    cout << "Na pustą kolumnę tylko król.\n";
+                    continue;
+                }
+            }
+
+            choice.pop();
+            pierwsza.is_face_up = true;
+            cel.push_back(pierwsza);
+
+            continue;
+        }
+
+        // RUCH: z choice (0) do stosu końcowego (8–11)
+        if (z == 0 && d >= 8 && d <= 11) {
+            if (choice.empty()) {
+                cout << "Stos dobierania pusty.\n";
+                continue;
+            }
+
+            Card pierwsza = choice.front();
+            if (pierwsza.card_description != kartaStr) {
+                cout << "Pierwsza karta w kolejce to nie " << kartaStr << ".\n";
+                continue;
+            }
+
+            stack<Card>& stos = s8_11[d - 8];
+            if (stos.empty()) {
+                if (pierwsza.value != 1) {
+                    cout << "Na pusty stos tylko As.\n";
+                    continue;
+                }
+            }
+            else {
+                Card top = stos.top();
+                if (top.shape != pierwsza.shape || pierwsza.value != top.value + 1) {
+                    cout << "Nieprawidłowy ruch.\n";
+                    continue;
+                }
+            }
+
+            choice.pop();
+            pierwsza.is_face_up = true;
+            stos.push(pierwsza);
+
+            continue;
+        }
+
+        cout << "Nieprawidłowa komenda.\n";
     }
 }
+
 //rzeniesienie karty z jednego studiku na drugi:
 
 void Gameplay::przeniesKarte(int zKolumny, int doKolumny)
 {
-    //sprawdzenie czy indeksy kolumn są poprawne
     if (zKolumny < 0 || zKolumny >= 7 || doKolumny < 0 || doKolumny >= 7) {
         cout << "Nieprawidlowy indeks kolumny.\n";
         return;
     }
 
-    //przypisanie kolumn do zmiennych
     vector<Card>& z_ = h1_7[zKolumny];
     vector<Card>& do_ = h1_7[doKolumny];
 
-    //sprawdzenie czy wogóle jest jakas karta
     if (z_.empty()) {
         cout << "Kolumna Z jest pusta.\n";
         return;
     }
 
-    Card karta = z_.back();
+    // Szukamy pierwszej odkrytej karty od końca
+    int indeksPierwszejOdkrytej = -1;
+    for (int i = 0; i < z_.size(); ++i) {
+        if (z_[i].is_face_up) {
+            indeksPierwszejOdkrytej = i;
+            break;
+        }
+    }
 
-    //sprawdzenie czy karta jest zakryta
-    if (!karta.is_face_up) {
-        cout << "Nie mozna przeniesc zakrytej karty.\n";
+    if (indeksPierwszejOdkrytej == -1) {
+        cout << "Brak odkrytych kart do przeniesienia.\n";
         return;
     }
 
-    //jezeli miejsce jest puste to może byc tylko król
-    if (do_.empty())
-    {
-        if (karta.value != 13)
-        {
+    // karta, która pójdzie na wierzch nowej kolumny
+    Card& kartaDoSprawdzenia = z_[indeksPierwszejOdkrytej];
+
+    if (do_.empty()) {
+        if (kartaDoSprawdzenia.value != 13) {
             cout << "Tylko krola można przeniesc na pustą kolumne.\n";
             return;
         }
     }
-        else
-        {
-            Card top = do_.back();
+    else {
+        Card& cel = do_.back();
 
-            if (top.color == karta.color)
-            {
-                cout << "Nie mozna przenieść karty o tym samym kolorze.\n";
-                return;
-            }
-            if (top.value != karta.value + 1)
-            {
-                cout << "Nie mozna przeniesc karty o tej samej wartosci.\n";
-                return;
-            }
+        if (kartaDoSprawdzenia.color == cel.color) {
+            cout << "Nie mozna polozyc na karcie tego samego koloru.\n";
+            return;
         }
+        if (kartaDoSprawdzenia.value != cel.value - 1) {
+            cout << "Nie mozna polozyc karty, ktora nie jest o 1 mniejsza.\n";
+            return;
+        }
+    }
 
-    do_.push_back(karta);
-    z_.pop_back();
+    // przeniesienie całego stosu odkrytych kart
+    vector<Card> tymczasowe(z_.begin() + indeksPierwszejOdkrytej, z_.end());
 
-    // Odkryj nową ostatnią kartę jeśli istnieje
+    // usuń je z kolumny źródłowej
+    z_.erase(z_.begin() + indeksPierwszejOdkrytej, z_.end());
+
+    // dodaj do kolumny docelowej
+    do_.insert(do_.end(), tymczasowe.begin(), tymczasowe.end());
+
+    // odkryj nową kartę w kolumnie źródłowej, jeśli istnieje
     if (!z_.empty()) {
         z_.back().is_face_up = true;
     }
 
-    cout << "Przeniesiono karte " << karta.card_description << " z kolumny " << zKolumny + 1 << " do kolumny " << doKolumny + 1 << ".\n";
+    cout << "Przeniesiono " << tymczasowe.size() << " kart z kolumny " << zKolumny + 1 << " do kolumny " << doKolumny + 1 << ".\n";
 }
+
 
 void Gameplay::przeniesWektorStos(int zWektor, int doStos)
 {
