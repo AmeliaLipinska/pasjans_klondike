@@ -193,12 +193,19 @@ void Gameplay::Menu() {
     {
         wyswietlPlansze();
 
+
+        //DODAC WARUNEK CO DO FORMY PODANIA RUCHU
+        //GRZEGOREK MA RUCH W FORMIE "1 7S 3" A JA MAM ZROBIONE TYLKO ZA POMOCA WYBORU 0 1 2...11
+        //TRZEBA DAC WARUNKI DO FUNKCJI RUCHÓW BY PROGRAM WIEDZIAŁ ŻE MA MUŻYC KONKRETNEGO RUCHU
+
         cout << "\nPRZENIESIENIE KARTY.\n";
         cout << "Podaj numer kolumny z(1-7): ";
         cin >> z;
         cout << "Podaj numer kolumny do(1-7): ";
         cin >> do_;
 
+        
+        //jezeli z_ i do_ jest 1-7 to jest to ruch tylko miedzy wektorami
         przeniesKarte(z - 1, do_ - 1);
     }
 }
