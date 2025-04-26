@@ -89,6 +89,7 @@ public:
 	void ruchKolumnaNaStos(int z, string kartaStr, int d);
 	void ruchChoiceNaKolumne(string kartaStr, int d);
 	void ruchChoiceNaStos(string kartaStr, int d);
+    bool Wygrana();
 };
 
 void Gameplay::generujTalie() {
@@ -195,12 +196,14 @@ void Gameplay::Menu() {
     generujTalie();
     rozdaj();
 
-    while (true)
+    while (!Wygrana())
     {
         wyswietlPlansze();
 
         cout << "\n>> ";
         cin >> z;
+
+        Wygrana();
 
         if (z == 0 && cin.peek() == '\n') {
             dobierzKarty();
@@ -259,13 +262,13 @@ void Gameplay::ruchKolumnaNaKolumne(int z, string kartaStr, int d) {
     if (!cel.empty()) {
         Card& top = cel.back();
         if (top.color == tymczasowe[0].color || top.value != tymczasowe[0].value + 1) {
-            cout << "Nie można położyć – kolor lub wartość się nie zgadza.\n";
+            cout << "Nie można polozyc – kolor lub wartość się nie zgadza.\n";
             return;
         }
     }
     else {
         if (tymczasowe[0].value != 13) {
-            cout << "Na pustą kolumnę można położyć tylko króla.\n";
+            cout << "Na pustą kolumnę mozna polozyc tylko krola.\n";
             return;
         }
     }
@@ -371,6 +374,21 @@ void Gameplay::ruchChoiceNaStos(string kartaStr, int d) {
     choice.pop();
     pierwsza.is_face_up = true;
     stos.push(pierwsza);
+}
+
+//funkcja wygranej- kiedy 4 stosy sa zapełnione 
+
+bool Gameplay::Wygrana()
+{
+    for (int i = 0; i < 4; i++)
+    {
+        //sprawdza czy jest 13 kart na kazdym stosie, jak sa to ttrue a jak nie to false
+        if (s8_11[i].size()!=13)
+        {
+            return false;
+        }
+    }
+    return true;
 }
 
 int main()
