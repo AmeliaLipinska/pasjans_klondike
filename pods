@@ -64,6 +64,7 @@ struct Card
 class Gameplay {
     Card deck[MAX_C];
     queue<Card> choice;
+    vector<Card> odkryte;
 
     vector<Card> pile1, pile2, pile3, pile4, pile5, pile6, pile7;
     vector<vector<Card>> h1_7 = { pile1, pile2, pile3, pile4, pile5, pile6, pile7 };
@@ -84,11 +85,13 @@ public:
     void wyswietlPlansze();
 
     void Menu();
-	void dobierzKarty();
-	void ruchKolumnaNaKolumne(int z, string kartaStr, int d);
-	void ruchKolumnaNaStos(int z, string kartaStr, int d);
-	void ruchChoiceNaKolumne(string kartaStr, int d);
-	void ruchChoiceNaStos(string kartaStr, int d);
+    void dobierzKarty();
+    void ruchKolumnaNaKolumne(int z, string kartaStr, int d);
+    void ruchKolumnaNaStos(int z, string kartaStr, int d);
+    void ruchChoiceNaKolumne(string kartaStr, int d);
+    void ruchChoiceNaStos(string kartaStr, int d);
+    void ruchStosNaKolumne(int z, string kartaStr, int d);
+    bool czyJestWKartach(const Card& karta);
     bool Wygrana();
 };
 
@@ -122,6 +125,13 @@ void Gameplay::rozdaj() {
 
         choice.push(deck[i]);
     }
+
+    for (int i = 0; i < 3 && !choice.empty(); ++i) {
+        Card temp = choice.front();
+        choice.pop();
+        temp.is_face_up = true;
+        odkryte.push_back(temp);
+    }
 };
 
 void Gameplay::printNaglowek() {
@@ -133,21 +143,34 @@ void Gameplay::printLinia() {
 }
 
 void Gameplay::printGora() {
-    cout << "      ";  // Przesunięcie o 6
-    if (!choice.empty())
-        cout << setw(6) << left << choice.front().card_description;
-    else
-        cout << setw(6) << "0";  // Dodanie odpowiedniego odstępu
+    cout << "      "; // odstęp dla numeru 0
 
-    cout << "               ";
-    for (int i = 0; i < 4; i++) {
+    int n = odkryte.size();
+    for (int i = 0; i < 3; ++i) {
+        if (i < odkryte.size()) {
+            if (i < (3 - n)) {
+                cout << setw(6) << " ";
+            }
+            else {
+                cout << setw(6) << left << odkryte[i - (3 - n)].card_description;
+            }
+        }
+    }
+
+
+    cout << "     "; // odstęp do stosów
+
+    // Stosy 8–11
+    for (int i = 0; i < 4; ++i) {
         if (!s8_11[i].empty())
             cout << setw(7) << left << s8_11[i].top().card_description;
         else
-            cout << setw(7) << left << "0";  // Dodanie odpowiedniego odstępu
+            cout << setw(7) << left << "0";
     }
+
     cout << endl;
 }
+
 
 void Gameplay::printDol() {
     const int STALA_WYSOKOSC = 15;
@@ -224,19 +247,65 @@ void Gameplay::Menu() {
         else if (z == 0 && d >= 8 && d <= 11) {
             ruchChoiceNaStos(kartaStr, d);
         }
+        else if (z >= 8 && z <= 11 && d >= 1 && d <= 7) {
+            ruchStosNaKolumne(z, kartaStr, d);
+        }
         else {
             cout << "Nieprawidłowa komenda.\n";
         }
     }
 }
 
+bool Gameplay::czyJestWKartach(const Card& karta) {
+    // Sprawdź karty na stole
+    for (auto& kolumna : h1_7) {
+        for (auto& k : kolumna) {
+            if (k.card_description == karta.card_description) return true;
+        }
+    }
+    // Sprawdź stosy końcowe 8-11
+    for (auto& stos : s8_11) {
+        stack<Card> temp = stos;
+        while (!temp.empty()) {
+            if (temp.top().card_description == karta.card_description) return true;
+            temp.pop();
+        }
+    }
+    // Sprawdź odkryte
+    for (auto& k : odkryte) {
+        if (k.card_description == karta.card_description) return true;
+    }
+
+    return false;
+}
+
 void Gameplay::dobierzKarty() {
+    if (choice.empty() && odkryte.empty()) {
+        cout << "\nResetowanie stosu dobierania...\n";
+
+        // Jeśli choice i odkryte puste - resetujemy
+        for (auto& karta : deck) {
+            if (!czyJestWKartach(karta)) {
+                karta.is_face_up = false;
+                choice.push(karta);
+            }
+        }
+    }
+
+    odkryte.clear();
+
     int ile = min(3, (int)choice.size());
+    vector<Card> temp_cards;
     for (int i = 0; i < ile; ++i) {
         Card temp = choice.front();
         choice.pop();
         temp.is_face_up = true;
-        choice.push(temp);
+        temp_cards.push_back(temp);
+    }
+
+    // Dodajemy je tak, żeby najnowsza była NA KOŃCU (czyli po prawej)
+    for (int i = 0; i < temp_cards.size(); ++i) {
+        odkryte.push_back(temp_cards[i]);
     }
 }
 
@@ -312,14 +381,15 @@ void Gameplay::ruchKolumnaNaStos(int z, string kartaStr, int d) {
 }
 
 void Gameplay::ruchChoiceNaKolumne(string kartaStr, int d) {
-    if (choice.empty()) {
-        cout << "Stos dobierania pusty.\n";
+    if (odkryte.empty()) {
+        cout << "Brak kart do zagrania.\n";
         return;
     }
 
-    Card pierwsza = choice.front();
-    if (pierwsza.card_description != kartaStr) {
-        cout << "Pierwsza karta w kolejce to nie " << kartaStr << ".\n";
+    Card prawa = odkryte.back();  // prawa karta
+
+    if (prawa.card_description != kartaStr) {
+        cout << "Możesz zagrać tylko kartę " << prawa.card_description << " (prawa karta)!\n";
         return;
     }
 
@@ -327,54 +397,110 @@ void Gameplay::ruchChoiceNaKolumne(string kartaStr, int d) {
 
     if (!cel.empty()) {
         Card& top = cel.back();
-        if (top.color == pierwsza.color || top.value != pierwsza.value + 1) {
+        if (top.color == prawa.color || top.value != prawa.value + 1) {
             cout << "Nie można położyć tej karty na kolumnę.\n";
             return;
         }
     }
     else {
-        if (pierwsza.value != 13) {
-            cout << "Na pustą kolumnę tylko król.\n";
+        if (prawa.value != 13) {
+            cout << "Na pustą kolumnę możesz położyć tylko króla.\n";
             return;
         }
     }
 
-    choice.pop();
-    pierwsza.is_face_up = true;
-    cel.push_back(pierwsza);
+    // 1. ZAGRYWASZ kartę
+    odkryte.pop_back();
+    cel.push_back(prawa);
+
+    // 2. AUTOMATYCZNIE dobierasz nową TYLKO jeśli coś jeszcze jest w kolejce
+    if (!choice.empty()) {
+        Card nowa = choice.front();
+        choice.pop();
+        nowa.is_face_up = true;
+        odkryte.insert(odkryte.begin(), nowa);
+    }
+
 }
 
+
+
 void Gameplay::ruchChoiceNaStos(string kartaStr, int d) {
-    if (choice.empty()) {
-        cout << "Stos dobierania pusty.\n";
+    if (odkryte.empty()) {
+        cout << "Brak kart do zagrania.\n";
         return;
     }
 
-    Card pierwsza = choice.front();
-    if (pierwsza.card_description != kartaStr) {
-        cout << "Pierwsza karta w kolejce to nie " << kartaStr << ".\n";
+    Card prawa = odkryte.back();  // prawa karta
+
+    if (prawa.card_description != kartaStr) {
+        cout << "Możesz zagrać tylko kartę " << prawa.card_description << " (prawa karta)!\n";
         return;
     }
 
     stack<Card>& stos = s8_11[d - 8];
+
     if (stos.empty()) {
-        if (pierwsza.value != 1) {
-            cout << "Na pusty stos tylko As.\n";
+        if (prawa.value != 1) {
+            cout << "Na pusty stos można położyć tylko Asa.\n";
             return;
         }
     }
     else {
         Card top = stos.top();
-        if (top.shape != pierwsza.shape || pierwsza.value != top.value + 1) {
-            cout << "Nieprawidłowy ruch.\n";
+        if (top.shape != prawa.shape || prawa.value != top.value + 1) {
+            cout << "Nieprawidłowy ruch na stos.\n";
             return;
         }
     }
 
-    choice.pop();
-    pierwsza.is_face_up = true;
-    stos.push(pierwsza);
+    odkryte.pop_back();
+    stos.push(prawa);
+
+    if (!choice.empty()) {
+        Card nowa = choice.front();
+        choice.pop();
+        nowa.is_face_up = true;
+        odkryte.insert(odkryte.begin(), nowa);
+    }
 }
+
+void Gameplay::ruchStosNaKolumne(int z, string kartaStr, int d) {
+    stack<Card>& stos = s8_11[z - 8];
+
+    if (stos.empty()) {
+        cout << "Stos " << z << " jest pusty.\n";
+        return;
+    }
+
+    Card karta = stos.top();
+
+    if (karta.card_description != kartaStr) {
+        cout << "Na wierzchu stosu " << z << " nie ma karty " << kartaStr << ".\n";
+        return;
+    }
+
+    vector<Card>& kolumna = h1_7[d - 1];
+
+    if (!kolumna.empty()) {
+        Card& top = kolumna.back();
+        if (top.color == karta.color || top.value != karta.value + 1) {
+            cout << "Nie można położyć tej karty na kolumnę.\n";
+            return;
+        }
+    }
+    else {
+        if (karta.value != 13) {
+            cout << "Na pustą kolumnę możesz położyć tylko króla.\n";
+            return;
+        }
+    }
+
+    stos.pop();
+    karta.is_face_up = true; // odkryta karta na kolumnie
+    kolumna.push_back(karta);
+}
+
 
 //funkcja wygranej- kiedy 4 stosy sa zapełnione 
 
@@ -383,7 +509,7 @@ bool Gameplay::Wygrana()
     for (int i = 0; i < 4; i++)
     {
         //sprawdza czy jest 13 kart na kazdym stosie, jak sa to ttrue a jak nie to false
-        if (s8_11[i].size()!=13)
+        if (s8_11[i].size() != 13)
         {
             return false;
         }
